@@ -42,7 +42,8 @@ class ChatGPTTelegramBot:
             BotCommand(command='help', description=localized_text('help_description', bot_language)),
             BotCommand(command='reset', description=localized_text('reset_description', bot_language)),
             BotCommand(command='stats', description=localized_text('stats_description', bot_language)),
-            BotCommand(command='resend', description=localized_text('resend_description', bot_language))
+            BotCommand(command='resend', description=localized_text('resend_description', bot_language)),
+            BotCommand(command='payment', description=localized_text('Start a new payment', bot_language))
         ]
         # If imaging is enabled, add the "image" command to the list
         if self.config.get('enable_image_generation', False):
@@ -211,6 +212,18 @@ class ChatGPTTelegramBot:
             message.text = self.last_message.pop(chat_id)
 
         await self.prompt(update=update, context=context)
+
+    async def payment(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        # Here, you would interact with the payment service to create a payment address
+        # For demonstration purposes, we assume a payment address is returned
+        payment_address = "Your USDT payment address here"
+        payment_amount = "10.00"  # The amount you expect the user to pay
+        user_id = update.message.from_user.id
+
+        # Store the payment address and expected amount in your database associated with the user_id
+
+        # Send the payment address to the user
+        await update.message.reply_text(f"Please send {payment_amount} USDT to {payment_address}")
 
     async def reset(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
@@ -1063,6 +1076,7 @@ class ChatGPTTelegramBot:
         application.add_handler(CommandHandler('start', self.help))
         application.add_handler(CommandHandler('stats', self.stats))
         application.add_handler(CommandHandler('resend', self.resend))
+        application.add_handler(CommandHandler('payment', self.payment))
         application.add_handler(CommandHandler(
             'chat', self.prompt, filters=filters.ChatType.GROUP | filters.ChatType.SUPERGROUP)
         )
