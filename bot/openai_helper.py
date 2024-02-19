@@ -231,7 +231,14 @@ class OpenAIHelper:
             exceeded_max_history_size = len(self.conversations[chat_id]) > self.config['max_history_size']
 
             if exceeded_max_tokens or exceeded_max_history_size:
-                logging.info(f'Chat history for chat ID {chat_id} is too long. Summarising...')
+                logText = f'Chat history for chat ID {chat_id} is too long.'
+                if (exceeded_max_tokens):
+                    logText += f'exceeded_max_tokens: {token_count + self.config["max_tokens"]}>{self.__max_model_tokens()}'
+                if (exceeded_max_history_size):
+                    logText += f'exceeded_max_history_size: {len(self.conversations[chat_id])}>{self.config["max_history_size"]}'
+
+                logText += '. Summarising...'
+                logging.info(f'{logText}')
                 try:
                     summary = await self.__summarise(self.conversations[chat_id][:-1])
                     logging.debug(f'Summary: {summary}')
