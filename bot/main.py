@@ -1,8 +1,7 @@
+#main.py
 import logging
 import os
-
 from dotenv import load_dotenv
-
 from plugin_manager import PluginManager
 from openai_helper import OpenAIHelper, default_max_tokens, are_functions_available
 from telegram_bot import ChatGPTTelegramBot
@@ -60,6 +59,7 @@ def main():
         'vision_max_tokens': int(os.environ.get('VISION_MAX_TOKENS', '300')),
         'tts_model': os.environ.get('TTS_MODEL', 'tts-1'),
         'tts_voice': os.environ.get('TTS_VOICE', 'alloy'),
+        'token_price': float(os.environ.get('TOKEN_PRICE', 0.03)),
     }
 
     if openai_config['enable_functions'] and not functions_available:
@@ -92,7 +92,7 @@ def main():
         'ignore_group_transcriptions': os.environ.get('IGNORE_GROUP_TRANSCRIPTIONS', 'true').lower() == 'true',
         'ignore_group_vision': os.environ.get('IGNORE_GROUP_VISION', 'true').lower() == 'true',
         'group_trigger_keyword': os.environ.get('GROUP_TRIGGER_KEYWORD', ''),
-        'token_price': float(os.environ.get('TOKEN_PRICE', 0.002)),
+        'token_price': float(os.environ.get('TOKEN_PRICE', 0.03)),
         'image_prices': [float(i) for i in os.environ.get('IMAGE_PRICES', "0.016,0.018,0.02").split(",")],
         'vision_token_price': float(os.environ.get('VISION_TOKEN_PRICE', '0.01')),
         'image_receive_mode': os.environ.get('IMAGE_FORMAT', "photo"),

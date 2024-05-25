@@ -1,18 +1,13 @@
+#openai_helper.py
 from __future__ import annotations
 import datetime
 import logging
 import os
-
 import tiktoken
-
 import openai
-
-import requests
 import json
 import httpx
 import io
-from datetime import date
-from calendar import monthrange
 from PIL import Image
 
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
@@ -25,7 +20,7 @@ GPT_3_MODELS = ("gpt-3.5-turbo", "gpt-3.5-turbo-0301", "gpt-3.5-turbo-0613")
 GPT_3_16K_MODELS = ("gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "gpt-3.5-turbo-1106")
 GPT_4_MODELS = ("gpt-4", "gpt-4-0314", "gpt-4-0613", "gpt-4o",)
 GPT_4_32K_MODELS = ("gpt-4-32k", "gpt-4-32k-0314", "gpt-4-32k-0613")
-GPT_4_VISION_MODELS = ("gpt-4-vision-preview",)
+GPT_4_VISION_MODELS = ("gpt-4-vision-preview","gpt-4o")
 GPT_4_128K_MODELS = ("gpt-4-1106-preview",)
 GPT_ALL_MODELS = GPT_3_MODELS + GPT_3_16K_MODELS + GPT_4_MODELS + GPT_4_32K_MODELS + GPT_4_VISION_MODELS + GPT_4_128K_MODELS
 
@@ -125,9 +120,6 @@ class OpenAIHelper:
     async def get_chat_response(self, chat_id: int, query: str) -> tuple[str, str]:
         """
         Gets a full response from the GPT model.
-        :param chat_id: The chat ID
-        :param query: The query to send to the model
-        :return: The answer from the model and the number of tokens used
         """
         plugins_used = ()
         response = await self.__common_get_chat_response(chat_id, query)
@@ -153,9 +145,14 @@ class OpenAIHelper:
         bot_language = self.config['bot_language']
         show_plugins_used = len(plugins_used) > 0 and self.config['show_plugins_used']
         plugin_names = tuple(self.plugin_manager.get_plugin_source_name(plugin) for plugin in plugins_used)
+
         if self.config['show_usage']:
+            total_tokens = response.usage.total_tokens
+            token_price = self.config['token_price']
+            cost = int(total_tokens) * token_price / 1000
             answer += "\n\n---\n" \
-                      f"💰 {str(response.usage.total_tokens)} {localized_text('stats_tokens', bot_language)}" \
+                      f"💰 {str(total_tokens)} {localized_text('stats_tokens', bot_language)}" \
+                      f" (${cost:.4f})" \
                       f" ({str(response.usage.prompt_tokens)} {localized_text('prompt', bot_language)}," \
                       f" {str(response.usage.completion_tokens)} {localized_text('completion', bot_language)})"
             if show_plugins_used:
@@ -195,7 +192,9 @@ class OpenAIHelper:
         show_plugins_used = len(plugins_used) > 0 and self.config['show_plugins_used']
         plugin_names = tuple(self.plugin_manager.get_plugin_source_name(plugin) for plugin in plugins_used)
         if self.config['show_usage']:
-            answer += f"\n\n---\n💰 {tokens_used} {localized_text('stats_tokens', self.config['bot_language'])}"
+            token_price = self.config['token_price']
+            cost = int(tokens_used) * token_price / 1000
+            answer += f"\n\n---\n💰 {tokens_used} {localized_text('stats_tokens', self.config['bot_language'])} = {cost:.4f} $"
             if show_plugins_used:
                 answer += f"\n🔌 {', '.join(plugin_names)}"
         elif show_plugins_used:
@@ -561,7 +560,9 @@ class OpenAIHelper:
         #show_plugins_used = len(plugins_used) > 0 and self.config['show_plugins_used']
         #plugin_names = tuple(self.plugin_manager.get_plugin_source_name(plugin) for plugin in plugins_used)
         if self.config['show_usage']:
-            answer += f"\n\n---\n💰 {tokens_used} {localized_text('stats_tokens', self.config['bot_language'])}"
+            token_price = self.config['token_price']
+            cost = int(tokens_used) * token_price / 1000
+            answer += f"\n\n---\n💰 {tokens_used} {localized_text('stats_tokens', self.config['bot_language'])} {cost:.4f} $"
         #     if show_plugins_used:
         #         answer += f"\n🔌 {', '.join(plugin_names)}"
         # elif show_plugins_used:
