@@ -27,7 +27,7 @@ def main():
         exit(1)
 
     # Setup configurations
-    model = os.environ.get('OPENAI_MODEL', 'gpt-3.5-turbo')
+    model = os.environ.get('OPENAI_MODEL')#gpt-3.5-turbo
     functions_available = are_functions_available(model=model)
     max_tokens_default = default_max_tokens(model=model)
     openai_config = {
@@ -40,8 +40,8 @@ def main():
         'assistant_prompt': os.environ.get('ASSISTANT_PROMPT', 'You are a helpful assistant.'),
         'max_tokens': int(os.environ.get('MAX_TOKENS', max_tokens_default)),
         'n_choices': int(os.environ.get('N_CHOICES', 1)),
-        'temperature': float(os.environ.get('TEMPERATURE', 1.0)),
-        'image_model': os.environ.get('IMAGE_MODEL', 'dall-e-2'),
+        'temperature': float(os.environ.get('TEMPERATURE', 0.5)),
+        'image_model': os.environ.get('IMAGE_MODEL', 'dall-e-3'),
         'image_quality': os.environ.get('IMAGE_QUALITY', 'standard'),
         'image_style': os.environ.get('IMAGE_STYLE', 'vivid'),
         'image_size': os.environ.get('IMAGE_SIZE', '512x512'),
